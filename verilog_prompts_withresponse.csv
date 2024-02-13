@@ -1,0 +1,310 @@
+,repo_name,content,content_len,unasserted,assertions,num_assertions,prompt,prompt_len
+261,alainmarcel/Surelog,"module dut();
+
+
+assert property ( @(posedge Clock)  strap_en_i |=> ##0 !strap_en_i [*]);
+
+
+endmodule // dut
+",108,"
+1module dut();
+2
+3
+4
+5
+6endmodule // dut
+7",['assert property ( @(posedge Clock)  strap_en_i |=> ##0 !strap_en_i [*]);'],1,"There is no input and output variables in the given code, hence no assertions can be generated.",1692
+32,antlr/grammars-v4,"module m (
+    input a,
+    b
+);
+  a1 :
+  assert #0 (a == b);
+endmodule
+module m (
+    input a,
+    b
+);
+  always_comb begin
+    a1 : assert #0 (a == b);
+  end
+endmodule
+",170,"
+1module m (
+2    input a,
+3    b
+4);
+5  a1 :
+6endmodule
+7module m (
+8    input a,
+9    b
+10);
+11  always_comb begin
+12  end
+13endmodule
+14","['assert #0 (a == b);', 'a1 : assert #0 (a == b);']",2,"[[5, ""#0"", ""a"", ""=="", ""b"", ""checking input a and output b at ever 0th clock cycle is necessary for the code to function""], [11, ""#0"", ""a"", ""=="", ""b"", ""checking input a and output b at ever 0th clock cycle is necessary for the code to function""]]",1788
+97,YosysHQ/yosys,"module top (
+	input clk,
+	input a, b
+);
+	default clocking @(posedge clk); endclocking
+
+	assert property (
+		$changed(b)
+	);
+
+`ifndef FAIL
+	assume property (
+		b !== 'x ##1 $changed(b)
+	);
+`endif
+
+endmodule
+",206,"
+1module top (
+2	input clk,
+3	input a, b
+4);
+5	default clocking @(posedge clk); endclocking
+6
+7		$changed(b)
+8	);
+9
+10`ifndef FAIL
+11	assume property (
+12		b !== 'x ##1 $changed(b)
+13	);
+14`endif
+15
+16endmodule
+17",['assert property ('],1,"[[6, '#0', 'clk', '!=', None, ""Checking that 'clk' (clock) variable has been initialized""], [6, '#0', 'a', '!=', None, ""Checking that 'a' input has been initialized""], [6, '#0', 'b', '!=', None, ""Checking that 'b' input has been initialized""], [8, '#0', 'b', '!=', None, ""Checking that variable 'b' has been changed""], [12, '#1', 'b', '!=', ""'x"", ""Checking if variable 'b' changes within one clock cycle""]]",1862
+306,fabianschuiki/moore,"// RUN: moore %s -e foo
+
+module foo;
+    int x, y;
+    assert #0 (x == y);
+    assert final (x == y);
+    assume #0 (x == y);
+    assume final (x == y);
+    cover #0 (x == y);
+    cover final (x == y);
+endmodule
+",212,"
+1// RUN: moore %s -e foo
+2
+3module foo;
+4    int x, y;
+5    assume #0 (x == y);
+6    assume final (x == y);
+7    cover #0 (x == y);
+8    cover final (x == y);
+9endmodule
+10","['assert #0 (x == y);', 'assert final (x == y);']",2,"[[5, '#0', 'x', '==', 'y', 'Checking whether x equals y at the 0th clock cycle'], [7, 'final', 'x', '==', 'y', 'Verifying equality of x and y at the final stage']]",1822
+100,YosysHQ/yosys,"module top (input clk, a, b);
+	always @(posedge clk) begin
+        if (a);
+        else assume property (@(posedge clk) b);
+	end
+
+`ifndef FAIL
+    assume property (@(posedge clk) !a);
+`endif
+    assert property (@(posedge clk) b);
+endmodule
+",241,"
+1module top (input clk, a, b);
+2	always @(posedge clk) begin
+3        if (a);
+4        else assume property (@(posedge clk) b);
+5	end
+6
+7`ifndef FAIL
+8    assume property (@(posedge clk) !a);
+9`endif
+10endmodule
+11",['assert property (@(posedge clk) b);'],1,"[[2, '#0', 'clk', '!=', None, ""checking clk at every 0th clock cycle is necessary for triggering the process""], [3, '#0', 'a', '!=', None, ""checking input a at every 0th clock cycle is necessary for the code to function""], [4, '#0', 'b', '!=', None, ""checking that b exists at every 0th clock cycle is necessary for the code to function""]]",1864
+103,YosysHQ/yosys,"module top (
+	input clk,
+	input a, b
+);
+	default clocking @(posedge clk); endclocking
+
+    wire a_copy;
+    assign a_copy = a;
+
+	assert property (
+		$rose(a) |-> b
+	);
+
+`ifndef FAIL
+	assume property (
+		$rose(a_copy) |-> b
+	);
+`endif
+
+endmodule
+",245,"
+1module top (
+2	input clk,
+3	input a, b
+4);
+5	default clocking @(posedge clk); endclocking
+6
+7    wire a_copy;
+8    assign a_copy = a;
+9
+10		$rose(a) |-> b
+11	);
+12
+13`ifndef FAIL
+14	assume property (
+15		$rose(a_copy) |-> b
+16	);
+17`endif
+18
+19endmodule
+20",['assert property ('],1,"[[4, '#0', 'a', '!=', None, 'Asserting that input a is not undefined to ensure it contributes to the process'], [4, '#0', 'b', '!=', None, 'Asserting that input b is not undefined to ensure it contributes to the process'], [4, '#0', 'clk', '!=', None, 'Asserting that the clock is not undefined to ensure the program runs on a clock cycle'], [8, '#0', 'a', '==', 'a_copy', 'Checking that assignment of a to a_copy is successful at every 0th clock cycle'], [10, '#0', 'a', '!=', None, 'Asserting that a is not undefined when checked with b to ensure accuracy of the check'], [10, '#0', 'b', '!=', None, 'Asserting that b is not undefined when checked with a to ensure accuracy of the check'], [15, '#0', 'a_copy', '!=', None, 'Asserting that a_copy is not undefined when checked with b to ensure accuracy of the check'], [15, '#0', 'b', '!=', None, 'Asserting that b is not undefined when checked with a_copy to ensure accuracy of the check']]",1907
+232,alainmarcel/Surelog,"module tb (input clock, a, b);
+	wire x, y;
+
+	top top_inst (
+		.clock(clock),
+		.a(a), .b(b), .x(x), .y(y)
+	);
+
+	always @(posedge clock) begin
+		assert (x == ($past(a, 2) ^ $past(b, 2)));
+		assert (y == (!$past(a, 2) || !$past(b, 2)));
+	end
+endmodule
+",250,"
+1module tb (input clock, a, b);
+2	wire x, y;
+3
+4	top top_inst (
+5		.clock(clock),
+6		.a(a), .b(b), .x(x), .y(y)
+7	);
+8
+9	always @(posedge clock) begin
+10	end
+11endmodule
+12","['assert (x == ($past(a, 2) ^ $past(b, 2)));', 'assert (y == (!$past(a, 2) || !$past(b, 2)));']",2,"[[9, '#0', 'clock', '==', True, 'checking if clock edge is positive at every 0th clock cycle'], [9, '#0', 'a', '!=', None, 'checking if input a is given a value at every 0th clock cycle'], [9, '#0', 'b', '!=', None, 'checking if input b is given a value at every 0th clock cycle'], [9, '#0', 'x', '!=', None, 'checking if wire x is given a value at every 0th clock cycle'], [9, '#0', 'y', '!=', None, 'checking if wire y is given a value at every 0th clock cycle']]",1822
+111,YosysHQ/yosys,"module top (
+	input clk,
+	input a, b, c, d
+);
+	default clocking @(posedge clk); endclocking
+
+	assert property (
+		a ##[*] b |=> c until d
+	);
+
+`ifndef FAIL
+	assume property (
+		b |=> ##5 d
+	);
+	assume property (
+		b || (c && !d) |=> c
+	);
+`endif
+endmodule
+",256,"
+1module top (
+2	input clk,
+3	input a, b, c, d
+4);
+5	default clocking @(posedge clk); endclocking
+6
+7		a ##[*] b |=> c until d
+8	);
+9
+10`ifndef FAIL
+11	assume property (
+12		b |=> ##5 d
+13	);
+14	assume property (
+15		b || (c && !d) |=> c
+16	);
+17`endif
+18endmodule
+19",['assert property ('],1,"[[7, #0, 'b', '==', 'c', 'ensure that input b is equal to c to complete the equation at the 0th clock cycle'], [7, #0, 'c', '!=', 'd', 'ensure that inputs c and d are not equal to complete the process at the 0th clock cycle'], [12, #5, 'b', '==', 'd', 'ensure that input b is equal to d at the 5th clock cycle to complete the process'], [15, #0, 'b', '==', None, 'checking if the signal b is present at the 0th clock cycle'], [15, #0, 'c', '!=', 'd', 'ensure that inputs c and d are not equal to complete the process at the 0th clock cycle.']]",1916
+98,YosysHQ/yosys,"module top (
+	input clk,
+	input a, b, c, d
+);
+	default clocking @(posedge clk); endclocking
+
+	assert property (
+		a |=> b throughout (c ##1 d)
+	);
+
+`ifndef FAIL
+	assume property (
+		a |=> b && c
+	);
+	assume property (
+		b && c |=> b && d
+	);
+`endif
+endmodule
+",259,"
+1module top (
+2	input clk,
+3	input a, b, c, d
+4);
+5	default clocking @(posedge clk); endclocking
+6
+7		a |=> b throughout (c ##1 d)
+8	);
+9
+10`ifndef FAIL
+11	assume property (
+12		a |=> b && c
+13	);
+14	assume property (
+15		b && c |=> b && d
+16	);
+17`endif
+18endmodule
+19",['assert property ('],1,"[[4, ""#0"", ""a"", ""!="", None, ""make sure input a is not None""], [4, ""#0"", ""b"", ""!="", None, ""make sure input b is not None""], [4, ""#0"", ""c"", ""!="", None, ""make sure input c is not None""], [4, ""#0"", ""d"", ""!="", None, ""make sure input d is not None""], [7, ""#0"", ""b"", ""=="", ""a"", ""a must be equivalent to b for correct signal flow""], [15, ""#0"", ""b"", ""=="", ""d"", ""b must be equivalent to d for correct signal flow""]]",1919
+123,azonenberg/yosys,"module top (
+	input clk,
+	input a, b, c, d
+);
+	default clocking @(posedge clk); endclocking
+
+	assert property (
+		a ##[*] b |=> c until ##[*] d
+	);
+
+`ifndef FAIL
+	assume property (
+		b |=> ##5 d
+	);
+	assume property (
+		b || (c && !d) |=> c
+	);
+`endif
+endmodule
+",262,"
+1module top (
+2	input clk,
+3	input a, b, c, d
+4);
+5	default clocking @(posedge clk); endclocking
+6
+7		a ##[*] b |=> c until ##[*] d
+8	);
+9
+10`ifndef FAIL
+11	assume property (
+12		b |=> ##5 d
+13	);
+14	assume property (
+15		b || (c && !d) |=> c
+16	);
+17`endif
+18endmodule
+19",['assert property ('],1,"[[5, '#0', 'clk', '!=', None, ""clck is necessary to synchronize data processing""], [7, '#0', 'a', '!=', None, ""input a is required for the implication operation""], [7, '#0', 'b', '!=', None, ""input b is required for the implication operation""], [7, '#0', 'c', '!=', None, ""output c is necessary for the until operation""], [7, '#0', 'd', '!=', None, ""output d is necessary to complete the until operation""], [12, '#5', 'b', '!=', None, ""input b is necessary to perform the implication operation after 5 clock cycles""], [12, '#5', 'd', '!=', None, ""output d is necessary to perform the implication operation after 5 clock cycles""], [15, '#0', 'b', '!=', None, ""input b is necessary for the implication operation""], [15, '#0', 'c', '!=', None, ""input c is required for the logical operation""], [15, '#0', 'd', '!=', None, ""input d is necessary for the negation operation""]]",1922
