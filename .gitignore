@@ -1,4 +1,5 @@
-
+# main files to ignore
+Data/example-code/Jason_code/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
