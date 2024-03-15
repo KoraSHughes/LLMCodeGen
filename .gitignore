@@ -3,6 +3,7 @@ Data/example-code/Jason_code/
 Data/BigQuery/PythonAssertions100k.csv
 Data/gpt-responses/python-code/python_prompts_noresponse.csv
 Data/gpt-responses/python-code/python_prompts_noresponse3.csv
+Data/BigQuery/VerilogAssertions-ALL.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
