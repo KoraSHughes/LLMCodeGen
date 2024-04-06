@@ -1,0 +1,93 @@
+,Path,raw_code,Code,Figure,Question,Description,Book
+0,/Users/korahughes/Documents/GitHub/LLMCodeGen/Data/example-code/verilog examples/pages/Screenshot 2024-04-05 at 7.35.10 PM.jpg,"```verilog
+check_full_write_enC : cover property (check_full_write_en)
+$display($stime, “%m PASS: check_full_write_en”);
+
+property check_empty_read_en;
+   @ (posedge rclk) disable iff (!rclk_reset_n)
+   empty |-> !read_en;
+endproperty
+
+check_empty_read_enA: assert property (check_full_write_en) else
+$display($stime, “, FAIL: %m check_full_write_en”);
+check_empty_read_enC: cover property (check_full_write_en)
+$display($stime, “PASS: %m check_full_write_en”);
+
+integer i, seed1, wclk_width, rclk_width, loopcount, base;
+
+initial begin
+   loopcount = 50;
+   seed1 = 12345;
+   wclk = 1’b1; write_en=1’b1;
+   rclk = 1’b0; read_en=1;
+
+   fork
+      begin wclk_reset_n = 1’b0; #100; wclk_reset_n = 1’b1; write_en=1’b1; end
+      begin rclk_reset_n = 1’b0; #100; rclk_reset_n = 1’b1; read_en=1’b0; end
+
+   for (i=0; i<loopcount; i++)
+   begin
+      //rclk_width = (($random) % 40) + 5;
+      //wclk_width = (($random) % 40) + 5;
+      
+      rclk_width = 40; wclk_width = 40;
+      //rclk_width = 10; wclk_width = 40;
+      //rclk_width = 40; wclk_width = 10;
+
+```","
+check_full_write_enC : cover property (check_full_write_en)
+$display($stime, “%m PASS: check_full_write_en”);
+
+property check_empty_read_en;
+   @ (posedge rclk) disable iff (!rclk_reset_n)
+   empty |-> !read_en;
+endproperty
+
+check_empty_read_enA: assert property (check_full_write_en) else
+$display($stime, “, FAIL: %m check_full_write_en”);
+check_empty_read_enC: cover property (check_full_write_en)
+$display($stime, “PASS: %m check_full_write_en”);
+
+integer i, seed1, wclk_width, rclk_width, loopcount, base;
+
+initial begin
+   loopcount = 50;
+   seed1 = 12345;
+   wclk = 1’b1; write_en=1’b1;
+   rclk = 1’b0; read_en=1;
+
+   fork
+      begin wclk_reset_n = 1’b0; #100; wclk_reset_n = 1’b1; write_en=1’b1; end
+      begin rclk_reset_n = 1’b0; #100; rclk_reset_n = 1’b1; read_en=1’b0; end
+
+   for (i=0; i<loopcount; i++)
+   begin
+      //rclk_width = (($random) % 40) + 5;
+      //wclk_width = (($random) % 40) + 5;
+      
+      rclk_width = 40; wclk_width = 40;
+      //rclk_width = 10; wclk_width = 40;
+      //rclk_width = 40; wclk_width = 10;
+
+","The image contains text related to asynchronous FIFO assertions in what looks like a snippet from a book or documentation, along with a portion of Verilog code. However, please note that I am unable to provide information about the ""figure"" associated with this code since the image only contains text and code, and there is no reference to a specific figure or diagram within it. Would you like me to explain or analyze the Verilog code instead?",What is an example of using assertions and properties for checking a FIFO in Verilog?,"This Verilog code snippet contains a cover property, an assertion property, and an initial block that includes some initializations and a loop for testing clock signals and writing/reading operations in a design. The cover property and assert property are used to monitor and check certain conditions, while the initial block sets up the environment for simulation and executes the loop for testing.",Mehta
+1,/Users/korahughes/Documents/GitHub/LLMCodeGen/Data/example-code/verilog examples/pages/Screenshot 2024-04-05 at 7.29.31 PM.jpg,"```verilog
+sequence sr1;
+  req ##2 (gnt==1 && req==0);
+endsequence
+
+property pr1;
+  @(posedge clk) cStart |-> sr1;
+endproperty
+
+reqGnt: assert property (pr1) $display($stime,,""\t\t %m PASS""); else $display($stime,,""\t\t %m FAIL"");
+```","
+sequence sr1;
+  req ##2 (gnt==1 && req==0);
+endsequence
+
+property pr1;
+  @(posedge clk) cStart |-> sr1;
+endproperty
+
+reqGnt: assert property (pr1) $display($stime,,""\t\t %m PASS""); else $display($stime,,""\t\t %m FAIL"");
+",The figure associated with the Verilog code present in this image is Figure 4.3.,What is an example of a Verilog sequence and property definition that uses the overlapping implication operator to check a signal 'req' at the same clock edge it was triggered and also checks for another condition after 2 clock cycles?,"This Verilog code defines a sequence `sr1` that waits for two clock cycles after a condition `gnt==1 && req==0` is met. The property `pr1` specifies that the sequence should be found starting from a positive clock edge while `cStart` is true. Lastly, an assertion `reqGnt` is used to check if the property is satisfied and then display a pass or fail message along with the simulation time.",Mehta
