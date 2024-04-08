@@ -1,0 +1,1011 @@
+,Unnamed: 0,repo_name,Code,unasserted,assertions,num_assertions,variables,num_vars,prompt,prompt_len,gpt
+0,4,timofonic/1541UltimateII,"library ieee;
+use ieee.std_logic_1164.all;
+
+entity noise_generator is
+generic (
+    g_type          : string := ""Fibonacci""; -- can also be ""Galois""
+    g_polynom       : std_logic_vector := X""E10000"";
+    g_fixed_polynom : boolean := true;
+    g_seed          : std_logic_vector := X""000001"" );
+port (
+    clock           : in  std_logic;
+    enable          : in  std_logic;
+    reset           : in  std_logic;
+    polynom         : in  std_logic_vector(g_polynom'length-1 downto 0) := (others => '0');
+    q               : out std_logic_vector(g_polynom'length-1 downto 0) );
+end noise_generator;
+
+architecture gideon of noise_generator is
+    signal c_poly   : std_logic_vector(g_polynom'length-1 downto 0);
+    signal reg      : std_logic_vector(g_polynom'length-1 downto 0);
+begin
+    assert (g_type = ""Fibonacci"") or (g_type = ""Galois"")
+        report ""Type of LFSR should be Fibonacci or Galois..""
+        severity failure;
+    
+    c_poly <= g_polynom when g_fixed_polynom else polynom;    
+    
+    process(clock)
+        variable new_bit  : std_logic;
+    begin
+        if rising_edge(clock) then
+            if enable='1' then
+                if g_type = ""Fibonacci"" then
+                    new_bit := '0';
+                    for i in c_poly'range loop
+                        if c_poly(i)='1' then
+                            new_bit := new_bit xor reg(i);
+                        end if;
+                    end loop;
+                    reg <= reg(reg'high-1 downto 0) & new_bit;
+                else -- ""Galois"", enforced by assert
+                    if reg(reg'high)='1' then
+                        reg <= (reg(reg'high-1 downto 0) & '0') xor c_poly;
+                    else
+                        reg <=  reg(reg'high-1 downto 0) & '1';
+                    end if;
+                end if;
+            end if;
+            
+            if reset='1' then
+                reg <= g_seed;
+            end if;
+        end if;
+    end process;
+    q <= reg;
+end gideon;
+","
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity noise_generator is
+generic (
+    g_type          : string := ""Fibonacci""; -- can also be ""Galois""
+    g_polynom       : std_logic_vector := X""E10000"";
+    g_fixed_polynom : boolean := true;
+    g_seed          : std_logic_vector := X""000001"" );
+port (
+    clock           : in  std_logic;
+    enable          : in  std_logic;
+    reset           : in  std_logic;
+    polynom         : in  std_logic_vector(g_polynom'length-1 downto 0) := (others => '0');
+    q               : out std_logic_vector(g_polynom'length-1 downto 0) );
+end noise_generator;
+
+architecture gideon of noise_generator is
+    signal c_poly   : std_logic_vector(g_polynom'length-1 downto 0);
+    signal reg      : std_logic_vector(g_polynom'length-1 downto 0);
+begin
+        report ""Type of LFSR should be Fibonacci or Galois..""
+        severity failure;
+    
+    c_poly <= g_polynom when g_fixed_polynom else polynom;    
+    
+    process(clock)
+        variable new_bit  : std_logic;
+    begin
+        if rising_edge(clock) then
+            if enable='1' then
+                if g_type = ""Fibonacci"" then
+                    new_bit := '0';
+                    for i in c_poly'range loop
+                        if c_poly(i)='1' then
+                            new_bit := new_bit xor reg(i);
+                        end if;
+                    end loop;
+                    reg <= reg(reg'high-1 downto 0) & new_bit;
+                    if reg(reg'high)='1' then
+                        reg <= (reg(reg'high-1 downto 0) & '0') xor c_poly;
+                    else
+                        reg <=  reg(reg'high-1 downto 0) & '1';
+                    end if;
+                end if;
+            end if;
+            
+            if reset='1' then
+                reg <= g_seed;
+            end if;
+        end if;
+    end process;
+    q <= reg;
+end gideon;
+","['(g_type = ""Fibonacci"") or (g_type = ""Galois"")', '']",2,"['<= g_seed', ""<=  reg(reg'high-1 downto 0) & '1'"", ""<= reg(reg'high-1 downto 0) & new_bit"", "": std_logic_vector(g_polynom'length-1 downto 0)"", ""<= (reg(reg'high-1 downto 0) & '0') xor c_poly""]",5,"You are a helpful bot that adds assertions to pieces of Verilog code.
+You will be given a string of code presented in the format:
+*Variables:
+...
+*Code:
+...
+Generate assertions based on the following criteria:
+1) Assert that the function can take in all inputs necessary to complete the process
+2) Assert that all outputs are of the proper sizes.
+
+Your response should ONLY be a list of assertions in the format:
+[timing, subject_variable, target, reasoning]
+ -timing is the clock cycle(s) at which the assertion is checked relative to the present cycle
+ -subject_variable and target can ONLY be variables present in the code, integers, booleans, or None
+ -reasoning is a short decription of why the assertion was made
+
+Here is an example of what your input will look like and what you should return:
+Example Input:
+*Variables:
+[clkstart, pr1, cStart, sr1]
+*Code:
+assign clkstart = clk && gGate;
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clkstart) cStart |-> sr1;
+endproperty
+
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clk) cStart |-> sr1;
+endproperty
+Example Output:
+[clkstart, cStart, sr1, ""cStart should be equal to sr1 at the start of every clock cycle""]
+Which would be the same as adding the assertion:
+assert @(posedge clkstart) cStart |-> sr1 else $display(""cStart should be equal to sr1 at the start of every clock cycle"");
+
+
+Here is the actual input you should provide assertions for:
+*Variables:
+['<= g_seed', ""<=  reg(reg'high-1 downto 0) & '1'"", ""<= reg(reg'high-1 downto 0) & new_bit"", "": std_logic_vector(g_polynom'length-1 downto 0)"", ""<= (reg(reg'high-1 downto 0) & '0') xor c_poly""]
+*Code:
+
+library ieee;
+use ieee.std_logic_1164.all;
+
+entity noise_generator is
+generic (
+    g_type          : string := ""Fibonacci""; -- can also be ""Galois""
+    g_polynom       : std_logic_vector := X""E10000"";
+    g_fixed_polynom : boolean := true;
+    g_seed          : std_logic_vector := X""000001"" );
+port (
+    clock           : in  std_logic;
+    enable          : in  std_logic;
+    reset           : in  std_logic;
+    polynom         : in  std_logic_vector(g_polynom'length-1 downto 0) := (others => '0');
+    q               : out std_logic_vector(g_polynom'length-1 downto 0) );
+end noise_generator;
+
+architecture gideon of noise_generator is
+    signal c_poly   : std_logic_vector(g_polynom'length-1 downto 0);
+    signal reg      : std_logic_vector(g_polynom'length-1 downto 0);
+begin
+        report ""Type of LFSR should be Fibonacci or Galois..""
+        severity failure;
+    
+    c_poly <= g_polynom when g_fixed_polynom else polynom;    
+    
+    process(clock)
+        variable new_bit  : std_logic;
+    begin
+        if rising_edge(clock) then
+            if enable='1' then
+                if g_type = ""Fibonacci"" then
+                    new_bit := '0';
+                    for i in c_poly'range loop
+                        if c_poly(i)='1' then
+                            new_bit := new_bit xor reg(i);
+                        end if;
+                    end loop;
+                    reg <= reg(reg'high-1 downto 0) & new_bit;
+                    if reg(reg'high)='1' then
+                        reg <= (reg(reg'high-1 downto 0) & '0') xor c_poly;
+                    else
+                        reg <=  reg(reg'high-1 downto 0) & '1';
+                    end if;
+                end if;
+            end if;
+            
+            if reset='1' then
+                reg <= g_seed;
+            end if;
+        end if;
+    end process;
+    q <= reg;
+end gideon;
+",3600,"[""rising_edge(clock), enable, '1', 'The generator can only operate if enable signal is set to 1 at the rising edge of the clock.']"", 
+[""rising_edge(clock), g_type, 'Fibonacci', 'The LFSR Type should be Fibonacci (or Galois) at the rising edge of the clock.']"", 
+[""rising_edge(clock), new_bit, '0', 'New_bit should be initialized to 0 at the rising edge of the clock when generator type is Fibonacci.']"", 
+[""rising_edge(clock), reg(reg'high-1 downto 0), new_bit, 'The topmost bit of the register should be replaced with new_bit at the rising edge of the clock when generator type is Fibonacci.']"", 
+[""rising_edge(clock), reg, g_seed, 'In case of reset, the register should be set to g_seed at the rising edge of the clock.']"", 
+[""rising_edge(clock), q, reg, 'Output q should always follow the current value of reg at the rising edge of the clock.'""], 
+[""rising_edge(clock), c_poly, g_polynom, 'c_poly follows g_polynom when g_fixed_polynom is true, at the rising edge of the clock.'""], 
+[""rising_edge(clock), reg(reg'high-1 downto 0), None, 'The register should have proper size (reg'high-1 downto 0) after operations, at the rising edge of the clock.'""], 
+[""rising_edge(clock), c_poly, None, 'The c_poly should have proper size (g_polynom'length-1 downto 0) after assignment, at the rising edge of the clock.'""]]"
+1,12,peteut/ghdl,"
+-- Copyright (C) 2001 Bill Billowitch.
+
+-- Some of the work to develop this test suite was done with Air Force
+-- support.  The Air Force and Bill Billowitch assume no
+-- responsibilities for this software.
+
+-- This file is part of VESTs (Vhdl tESTs).
+
+-- VESTs is free software; you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the
+-- Free Software Foundation; either version 2 of the License, or (at
+-- your option) any later version. 
+
+-- VESTs is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+-- for more details. 
+
+-- You should have received a copy of the GNU General Public License
+-- along with VESTs; if not, write to the Free Software Foundation,
+-- Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+-- ---------------------------------------------------------------------
+--
+-- $Id: tc444.vhd,v 1.2 2001-10-26 16:29:54 paw Exp $
+-- $Revision: 1.2 $
+--
+-- ---------------------------------------------------------------------
+
+ENTITY model IS
+  PORT
+    (
+      F1:  OUT     integer := 3;
+      F2:  INOUT    integer := 3;
+      F3:  IN    integer
+      );
+END model;
+
+architecture model of model is
+begin
+  process
+  begin
+    wait for 1 ns;
+    assert F3= 3
+      report""wrong initialization of F3 through type conversion"" severity failure;
+    assert F2 = 3
+      report""wrong initialization of F2 through type conversion"" severity failure;
+    wait;
+  end process;
+end;
+
+
+ENTITY c03s02b01x01p19n01i00444ent IS
+END c03s02b01x01p19n01i00444ent;
+
+ARCHITECTURE c03s02b01x01p19n01i00444arch OF c03s02b01x01p19n01i00444ent IS
+
+  type integer_vector       is array (natural range <>) of integer;
+  subtype integer_vector_st    is integer_vector(0 to 15);
+
+  constant C1 : integer    := 4;
+
+  constant C70 : integer_vector_st :=(others => C1);
+
+  function complex_scalar(s : integer_vector_st) return integer is
+  begin
+    return 3;
+  end complex_scalar;
+  function scalar_complex(s : integer) return integer_vector_st is
+  begin
+    return C70;
+  end scalar_complex;
+  component model1
+    PORT
+      (    
+        F1:  OUT     integer;
+        F2:  INOUT    integer;
+        F3:  IN    integer
+        );
+  end component;
+  for T1 : model1 use entity work.model(model);
+
+  signal S1 : integer_vector_st;
+  signal S2 : integer_vector_st;
+  signal S3 : integer_vector_st := C70;
+BEGIN
+  T1: model1
+    port map (
+      scalar_complex(F1) => S1,
+      scalar_complex(F2) => complex_scalar(S2),
+      F3 => complex_scalar(S3)
+      );
+  TESTING: PROCESS
+  BEGIN
+    wait for 1 ns;
+    assert NOT((S1 = C70) and (S2 = C70)) 
+      report ""***PASSED TEST: c03s02b01x01p19n01i00444"" 
+      severity NOTE;
+    assert ((S1 = C70) and (S2 = C70)) 
+      report ""***FAILED TEST: c03s02b01x01p19n01i00444 - For an interface object of mode out, buffer, inout, or linkage, if the formal part includes a type conversion function, then the parameter subtype of that function must be a constrained array subtype.""
+      severity ERROR;
+    wait;
+  END PROCESS TESTING;
+
+END c03s02b01x01p19n01i00444arch;
+","
+
+-- Copyright (C) 2001 Bill Billowitch.
+
+-- Some of the work to develop this test suite was done with Air Force
+-- support.  The Air Force and Bill Billowitch assume no
+-- responsibilities for this software.
+
+-- This file is part of VESTs (Vhdl tESTs).
+
+-- VESTs is free software; you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the
+-- Free Software Foundation; either version 2 of the License, or (at
+-- your option) any later version. 
+
+-- VESTs is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+-- for more details. 
+
+-- You should have received a copy of the GNU General Public License
+-- along with VESTs; if not, write to the Free Software Foundation,
+-- Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+-- ---------------------------------------------------------------------
+--
+-- $Id: tc444.vhd,v 1.2 2001-10-26 16:29:54 paw Exp $
+-- $Revision: 1.2 $
+--
+-- ---------------------------------------------------------------------
+
+ENTITY model IS
+  PORT
+    (
+      F1:  OUT     integer := 3;
+      F2:  INOUT    integer := 3;
+      F3:  IN    integer
+      );
+END model;
+
+architecture model of model is
+begin
+  process
+  begin
+    wait for 1 ns;
+      report""wrong initialization of F3 through type conversion"" severity failure;
+      report""wrong initialization of F2 through type conversion"" severity failure;
+    wait;
+  end process;
+end;
+
+
+ENTITY c03s02b01x01p19n01i00444ent IS
+END c03s02b01x01p19n01i00444ent;
+
+ARCHITECTURE c03s02b01x01p19n01i00444arch OF c03s02b01x01p19n01i00444ent IS
+
+  type integer_vector       is array (natural range <>) of integer;
+  subtype integer_vector_st    is integer_vector(0 to 15);
+
+  constant C1 : integer    := 4;
+
+  constant C70 : integer_vector_st :=(others => C1);
+
+  function complex_scalar(s : integer_vector_st) return integer is
+  begin
+    return 3;
+  end complex_scalar;
+  function scalar_complex(s : integer) return integer_vector_st is
+  begin
+    return C70;
+  end scalar_complex;
+  component model1
+    PORT
+      (    
+        F1:  OUT     integer;
+        F2:  INOUT    integer;
+        F3:  IN    integer
+        );
+  end component;
+  for T1 : model1 use entity work.model(model);
+
+  signal S1 : integer_vector_st;
+  signal S2 : integer_vector_st;
+  signal S3 : integer_vector_st := C70;
+BEGIN
+  T1: model1
+    port map (
+      scalar_complex(F1) => S1,
+      scalar_complex(F2) => complex_scalar(S2),
+      F3 => complex_scalar(S3)
+      );
+  TESTING: PROCESS
+  BEGIN
+    wait for 1 ns;
+      report ""***PASSED TEST: c03s02b01x01p19n01i00444"" 
+      severity NOTE;
+      report ""***FAILED TEST: c03s02b01x01p19n01i00444 - For an interface object of mode out, buffer, inout, or linkage, if the formal part includes a type conversion function, then the parameter subtype of that function must be a constrained array subtype.""
+      severity ERROR;
+    wait;
+  END PROCESS TESTING;
+
+END c03s02b01x01p19n01i00444arch;
+","['F3= 3', 'F2 = 3', 'NOT((S1 = C70) and (S2 = C70))', '((S1 = C70) and (S2 = C70))']",4,"[')', ':= 3', ':= 4']",3,"You are a helpful bot that adds assertions to pieces of Verilog code.
+You will be given a string of code presented in the format:
+*Variables:
+...
+*Code:
+...
+Generate assertions based on the following criteria:
+1) Assert that the function can take in all inputs necessary to complete the process
+2) Assert that all outputs are of the proper sizes.
+
+Your response should ONLY be a list of assertions in the format:
+[timing, subject_variable, target, reasoning]
+ -timing is the clock cycle(s) at which the assertion is checked relative to the present cycle
+ -subject_variable and target can ONLY be variables present in the code, integers, booleans, or None
+ -reasoning is a short decription of why the assertion was made
+
+Here is an example of what your input will look like and what you should return:
+Example Input:
+*Variables:
+[clkstart, pr1, cStart, sr1]
+*Code:
+assign clkstart = clk && gGate;
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clkstart) cStart |-> sr1;
+endproperty
+
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clk) cStart |-> sr1;
+endproperty
+Example Output:
+[clkstart, cStart, sr1, ""cStart should be equal to sr1 at the start of every clock cycle""]
+Which would be the same as adding the assertion:
+assert @(posedge clkstart) cStart |-> sr1 else $display(""cStart should be equal to sr1 at the start of every clock cycle"");
+
+
+Here is the actual input you should provide assertions for:
+*Variables:
+[')', ':= 3', ':= 4']
+*Code:
+
+
+-- Copyright (C) 2001 Bill Billowitch.
+
+-- Some of the work to develop this test suite was done with Air Force
+-- support.  The Air Force and Bill Billowitch assume no
+-- responsibilities for this software.
+
+-- This file is part of VESTs (Vhdl tESTs).
+
+-- VESTs is free software; you can redistribute it and/or modify it
+-- under the terms of the GNU General Public License as published by the
+-- Free Software Foundation; either version 2 of the License, or (at
+-- your option) any later version. 
+
+-- VESTs is distributed in the hope that it will be useful, but WITHOUT
+-- ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-- FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+-- for more details. 
+
+-- You should have received a copy of the GNU General Public License
+-- along with VESTs; if not, write to the Free Software Foundation,
+-- Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+
+-- ---------------------------------------------------------------------
+--
+-- $Id: tc444.vhd,v 1.2 2001-10-26 16:29:54 paw Exp $
+-- $Revision: 1.2 $
+--
+-- ---------------------------------------------------------------------
+
+ENTITY model IS
+  PORT
+    (
+      F1:  OUT     integer := 3;
+      F2:  INOUT    integer := 3;
+      F3:  IN    integer
+      );
+END model;
+
+architecture model of model is
+begin
+  process
+  begin
+    wait for 1 ns;
+      report""wrong initialization of F3 through type conversion"" severity failure;
+      report""wrong initialization of F2 through type conversion"" severity failure;
+    wait;
+  end process;
+end;
+
+
+ENTITY c03s02b01x01p19n01i00444ent IS
+END c03s02b01x01p19n01i00444ent;
+
+ARCHITECTURE c03s02b01x01p19n01i00444arch OF c03s02b01x01p19n01i00444ent IS
+
+  type integer_vector       is array (natural range <>) of integer;
+  subtype integer_vector_st    is integer_vector(0 to 15);
+
+  constant C1 : integer    := 4;
+
+  constant C70 : integer_vector_st :=(others => C1);
+
+  function complex_scalar(s : integer_vector_st) return integer is
+  begin
+    return 3;
+  end complex_scalar;
+  function scalar_complex(s : integer) return integer_vector_st is
+  begin
+    return C70;
+  end scalar_complex;
+  component model1
+    PORT
+      (    
+        F1:  OUT     integer;
+        F2:  INOUT    integer;
+        F3:  IN    integer
+        );
+  end component;
+  for T1 : model1 use entity work.model(model);
+
+  signal S1 : integer_vector_st;
+  signal S2 : integer_vector_st;
+  signal S3 : integer_vector_st := C70;
+BEGIN
+  T1: model1
+    port map (
+      scalar_complex(F1) => S1,
+      scalar_complex(F2) => complex_scalar(S2),
+      F3 => complex_scalar(S3)
+      );
+  TESTING: PROCESS
+  BEGIN
+    wait for 1 ns;
+      report ""***PASSED TEST: c03s02b01x01p19n01i00444"" 
+      severity NOTE;
+      report ""***FAILED TEST: c03s02b01x01p19n01i00444 - For an interface object of mode out, buffer, inout, or linkage, if the formal part includes a type conversion function, then the parameter subtype of that function must be a constrained array subtype.""
+      severity ERROR;
+    wait;
+  END PROCESS TESTING;
+
+END c03s02b01x01p19n01i00444arch;
+",4610,"[""F1"", 3, None, ""F1 should be initialized to 3""],
+[""F2"", 3, None, ""F2 should be initialized to 3""],
+[""c03s02b01x01p19n01i00444arch"", integer_vector_st, None, ""c03s02b01x01p19n01i00444arch should be initialized to integer_vector_st""],
+[""C1"", 4, None, ""C1 should be initialized to 4""],
+[""C70"", integer_vector_st, None, ""C70 should be initialized to integer_vector_st using C1""],
+[""S3"", integer_vector_st, None, ""S3 should be initialized to C70""],
+[""model1.F1"", 3, None, ""F1 for model1 should be initialized to 3""],
+[""model1.F2"", 3, None, ""F2 for model1 should be initialized to 3""],
+[""S1"", scalar_complex(F1), None, ""S1 should hold the scalar_complex of F1""],
+[""S2"", complex_scalar(F2), None, ""S2 should hold the complex_scalar of F2""],
+[""T1.F3"", complex_scalar(S3), None, ""T1.F3 should hold the complex_scalar of S3""]]"
+2,19,chibby0ne/vhdl-book,"--! 
+--! Copyright (C) 2010 - 2013 Creonic GmbH
+--!
+--! @file: counter_tb.vhd
+--! @brief: tb of counter
+--! @author: Antonio Gutierrez
+--! @date: 2014-05-23
+--!
+--!
+--------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+--------------------------------------------------------
+entity counter_tb is
+    generic (PERIOD: time := 40 ns;
+            PD: time := 3 ns);
+end entity counter_tb;
+--------------------------------------------------------
+architecture circuit of counter_tb is
+
+
+    --------------------------------------------------------
+    -- component declaration
+    --------------------------------------------------------
+    component counter is
+    port (
+        clk, rst: in std_logic;
+        output: out natural range 0 to 9);
+    end component counter;
+
+    
+    --------------------------------------------------------
+    -- signal declaration
+    --------------------------------------------------------
+    signal clk_tb: std_logic := '0';
+    signal rst_tb: std_logic := '1';
+    signal output_tb: natural range 0 to 9 := 0;
+    
+
+begin
+
+    --------------------------------------------------------
+    -- component instantiation
+    --------------------------------------------------------
+    dut: counter port map (
+        clk => clk_tb,
+        rst => rst_tb, 
+        output => output_tb
+    );
+
+    
+    --------------------------------------------------------
+    -- stimuli generation
+    --------------------------------------------------------
+
+    -- rst
+    process
+    begin
+        rst_tb <= '1';
+        wait for PERIOD;
+        rst_tb <= '0';
+        wait;
+    end process;
+
+    -- clk
+    clk_tb <= not clk_tb after PERIOD / 2;
+    
+    
+    --------------------------------------------------------------------------------------
+    -- stop simulation
+    --------------------------------------------------------------------------------------
+    process
+    begin
+        wait for PERIOD * 10;
+        assert false
+        report ""simulation end""
+        severity failure;
+    end process;
+
+end architecture circuit;
+
+
+","
+--! 
+--! Copyright (C) 2010 - 2013 Creonic GmbH
+--!
+--! @file: counter_tb.vhd
+--! @brief: tb of counter
+--! @author: Antonio Gutierrez
+--! @date: 2014-05-23
+--!
+--!
+--------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+--------------------------------------------------------
+entity counter_tb is
+    generic (PERIOD: time := 40 ns;
+            PD: time := 3 ns);
+end entity counter_tb;
+--------------------------------------------------------
+architecture circuit of counter_tb is
+
+
+    --------------------------------------------------------
+    -- component declaration
+    --------------------------------------------------------
+    component counter is
+    port (
+        clk, rst: in std_logic;
+        output: out natural range 0 to 9);
+    end component counter;
+
+    
+    --------------------------------------------------------
+    -- signal declaration
+    --------------------------------------------------------
+    signal clk_tb: std_logic := '0';
+    signal rst_tb: std_logic := '1';
+    signal output_tb: natural range 0 to 9 := 0;
+    
+
+begin
+
+    --------------------------------------------------------
+    -- component instantiation
+    --------------------------------------------------------
+    dut: counter port map (
+        clk => clk_tb,
+        rst => rst_tb, 
+        output => output_tb
+    );
+
+    
+    --------------------------------------------------------
+    -- stimuli generation
+    --------------------------------------------------------
+
+    -- rst
+    process
+    begin
+        rst_tb <= '1';
+        wait for PERIOD;
+        rst_tb <= '0';
+        wait;
+    end process;
+
+    -- clk
+    clk_tb <= not clk_tb after PERIOD / 2;
+    
+    
+    --------------------------------------------------------------------------------------
+    -- stop simulation
+    --------------------------------------------------------------------------------------
+    process
+    begin
+        wait for PERIOD * 10;
+        report ""simulation end""
+        severity failure;
+    end process;
+
+end architecture circuit;
+
+
+",['false'],1,"[':= 3 ns)', ':= 40 ns']",2,"You are a helpful bot that adds assertions to pieces of Verilog code.
+You will be given a string of code presented in the format:
+*Variables:
+...
+*Code:
+...
+Generate assertions based on the following criteria:
+1) Assert that the function can take in all inputs necessary to complete the process
+2) Assert that all outputs are of the proper sizes.
+
+Your response should ONLY be a list of assertions in the format:
+[timing, subject_variable, target, reasoning]
+ -timing is the clock cycle(s) at which the assertion is checked relative to the present cycle
+ -subject_variable and target can ONLY be variables present in the code, integers, booleans, or None
+ -reasoning is a short decription of why the assertion was made
+
+Here is an example of what your input will look like and what you should return:
+Example Input:
+*Variables:
+[clkstart, pr1, cStart, sr1]
+*Code:
+assign clkstart = clk && gGate;
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clkstart) cStart |-> sr1;
+endproperty
+
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clk) cStart |-> sr1;
+endproperty
+Example Output:
+[clkstart, cStart, sr1, ""cStart should be equal to sr1 at the start of every clock cycle""]
+Which would be the same as adding the assertion:
+assert @(posedge clkstart) cStart |-> sr1 else $display(""cStart should be equal to sr1 at the start of every clock cycle"");
+
+
+Here is the actual input you should provide assertions for:
+*Variables:
+[':= 3 ns)', ':= 40 ns']
+*Code:
+
+--! 
+--! Copyright (C) 2010 - 2013 Creonic GmbH
+--!
+--! @file: counter_tb.vhd
+--! @brief: tb of counter
+--! @author: Antonio Gutierrez
+--! @date: 2014-05-23
+--!
+--!
+--------------------------------------------------------
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+--------------------------------------------------------
+entity counter_tb is
+    generic (PERIOD: time := 40 ns;
+            PD: time := 3 ns);
+end entity counter_tb;
+--------------------------------------------------------
+architecture circuit of counter_tb is
+
+
+    --------------------------------------------------------
+    -- component declaration
+    --------------------------------------------------------
+    component counter is
+    port (
+        clk, rst: in std_logic;
+        output: out natural range 0 to 9);
+    end component counter;
+
+    
+    --------------------------------------------------------
+    -- signal declaration
+    --------------------------------------------------------
+    signal clk_tb: std_logic := '0';
+    signal rst_tb: std_logic := '1';
+    signal output_tb: natural range 0 to 9 := 0;
+    
+
+begin
+
+    --------------------------------------------------------
+    -- component instantiation
+    --------------------------------------------------------
+    dut: counter port map (
+        clk => clk_tb,
+        rst => rst_tb, 
+        output => output_tb
+    );
+
+    
+    --------------------------------------------------------
+    -- stimuli generation
+    --------------------------------------------------------
+
+    -- rst
+    process
+    begin
+        rst_tb <= '1';
+        wait for PERIOD;
+        rst_tb <= '0';
+        wait;
+    end process;
+
+    -- clk
+    clk_tb <= not clk_tb after PERIOD / 2;
+    
+    
+    --------------------------------------------------------------------------------------
+    -- stop simulation
+    --------------------------------------------------------------------------------------
+    process
+    begin
+        wait for PERIOD * 10;
+        report ""simulation end""
+        severity failure;
+    end process;
+
+end architecture circuit;
+
+
+",3613,"[['clk_tb', None, True, 'clk_tb should be initialised before use'],
+ ['rst_tb', None, True, 'rst_tb should be initialised before use'],
+ ['output_tb', 0, 9 , 'output_tb should be within the range 0 to 9'],
+ ['PERIOD', None, None, 'PERIOD should be defined'],
+ ['PD', None, None, 'PD should be defined'],
+ ['clk_tb', PERIOD / 2, 'clk_tb should updated every half PERIOD'],
+ ['rst_tb', '1', 'The reset signal should initially be high before simulation starts'],
+ ['rst_tb', '0', 'The reset signal should fall after PERIOD']]"
+3,35,peteut/ghdl,"entity repro is
+    generic (
+	BUS_WIDTH : integer := 8;
+	ARRAY_WIDTH : integer := 2);
+end entity repro;
+
+architecture behavioural of repro is
+
+    type test_array_type is array (ARRAY_WIDTH-1 downto 0) of
+      bit_vector (BUS_WIDTH-1 downto 0);
+    signal s : test_array_type := (others => (others => '0'));
+
+begin
+
+    failing_process : process
+    begin
+      assert s'left = 1;
+      assert s'right = 0;
+      wait;
+    end process failing_process;
+    
+end architecture behavioural;
+","
+entity repro is
+    generic (
+	BUS_WIDTH : integer := 8;
+	ARRAY_WIDTH : integer := 2);
+end entity repro;
+
+architecture behavioural of repro is
+
+    type test_array_type is array (ARRAY_WIDTH-1 downto 0) of
+      bit_vector (BUS_WIDTH-1 downto 0);
+    signal s : test_array_type := (others => (others => '0'));
+
+begin
+
+    failing_process : process
+    begin
+      wait;
+    end process failing_process;
+    
+end architecture behavioural;
+","[""s'left = 1;"", ""s'right = 0;""]",2,"[':= 2)', ':= 8']",2,"You are a helpful bot that adds assertions to pieces of Verilog code.
+You will be given a string of code presented in the format:
+*Variables:
+...
+*Code:
+...
+Generate assertions based on the following criteria:
+1) Assert that the function can take in all inputs necessary to complete the process
+2) Assert that all outputs are of the proper sizes.
+
+Your response should ONLY be a list of assertions in the format:
+[timing, subject_variable, target, reasoning]
+ -timing is the clock cycle(s) at which the assertion is checked relative to the present cycle
+ -subject_variable and target can ONLY be variables present in the code, integers, booleans, or None
+ -reasoning is a short decription of why the assertion was made
+
+Here is an example of what your input will look like and what you should return:
+Example Input:
+*Variables:
+[clkstart, pr1, cStart, sr1]
+*Code:
+assign clkstart = clk && gGate;
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clkstart) cStart |-> sr1;
+endproperty
+
+sequence sr1;
+    req ##2 gnt;
+endsequence
+
+property pr1;
+    @(posedge clk) cStart |-> sr1;
+endproperty
+Example Output:
+[clkstart, cStart, sr1, ""cStart should be equal to sr1 at the start of every clock cycle""]
+Which would be the same as adding the assertion:
+assert @(posedge clkstart) cStart |-> sr1 else $display(""cStart should be equal to sr1 at the start of every clock cycle"");
+
+
+Here is the actual input you should provide assertions for:
+*Variables:
+[':= 2)', ':= 8']
+*Code:
+
+entity repro is
+    generic (
+	BUS_WIDTH : integer := 8;
+	ARRAY_WIDTH : integer := 2);
+end entity repro;
+
+architecture behavioural of repro is
+
+    type test_array_type is array (ARRAY_WIDTH-1 downto 0) of
+      bit_vector (BUS_WIDTH-1 downto 0);
+    signal s : test_array_type := (others => (others => '0'));
+
+begin
+
+    failing_process : process
+    begin
+      wait;
+    end process failing_process;
+    
+end architecture behavioural;
+",1930,"[1, 'BUS_WIDTH', 8, ""BUS_WIDTH should be 8 at the start of each clock cycle""],
+[1, 'ARRAY_WIDTH', 2, ""ARRAY_WIDTH should be 2 at the start of each clock cycle""],
+[1, 's', None, ""Signal s should not contain any undefined values at the start of every clock cycle""]"
