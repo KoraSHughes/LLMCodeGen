@@ -1,9 +1,11 @@
 # main files to ignore
 Data/example-code/Jason_code/
-Data/BigQuery/PythonAssertions100k.csv
-Data/gpt-responses/python-code/python_prompts_noresponse.csv
-Data/gpt-responses/python-code/python_prompts_noresponse3.csv
-Data/BigQuery/VerilogAssertions-ALL.csv
+# files that are too big for github
+Data/gpt-responses/python-code/
+Data/BigQuery/big/
+Data/preprocessing/preprocessed_python_unsupervised.csv
+Data/example-code/verilog examples/Textbook SVA/Book-Verilog/paginated/
+Organized Dataset/Unprompted Code/unsupervised-python.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
