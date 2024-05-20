@@ -4,7 +4,14 @@ Data/example-code/Jason_code/
 Data/gpt-responses/python-code/
 Data/BigQuery/big/
 Data/preprocessing/preprocessed_python_unsupervised.csv
+
 Data/example-code/verilog examples/Textbook SVA/Book-Verilog/paginated/
+Data/example-code/supervised-textbook/paginated/
+Data/example-code/supervised-textbook/extra-paginated/
+Data/example-code/supervised-textbook/checkpoints/
+Data/example-code/supervised-textbook/gcloud-checkpoints/
+Data/example-code/supervised-textbook/whole-books/
+
 Organized Dataset/Unprompted Code/unsupervised-python.zip
 
 # Byte-compiled / optimized / DLL files
